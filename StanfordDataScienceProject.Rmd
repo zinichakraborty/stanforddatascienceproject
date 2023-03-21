@@ -1,0 +1,84 @@
+---
+title: "Project"
+author: "Chandreyi Chakraborty"
+date: "6/26/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## R Markdown
+
+This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+
+When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+
+```{r}
+library(ggplot2)
+library(tree)
+save.data <- read.csv("/Users/ZiniC/Downloads/datasets_1901_3285_College.csv")
+
+Enroll_rate <- save.data$Enroll/save.data$Accept
+Priv <- as.factor(save.data$Private)
+save.data <- cbind(save.data, Enroll_rate,Priv)
+```
+
+```{r}
+ggplot(data = save.data, aes(x = Priv, y = Enroll_rate)) + geom_boxplot()
+```
+
+```{r}
+tree.college <- tree(Priv ~ Enroll_rate+Top10perc+PhD+Grad.Rate, save.data)
+summary(tree.college)
+```
+
+```{r}
+plot(tree.college)
+text(tree.college, pretty = 0, cex = 0.5)
+```
+
+```{r}
+glm.fit.college <- glm(Priv ~ Grad.Rate, data=save.data, family = binomial)
+summary(glm.fit.college)
+newdata <- data.frame(Grad.Rate = 1:100)
+newdata$Priv <- predict(glm.fit.college, newdata=newdata, type="response")
+newdata$Priv <- ifelse(newdata$Priv >= .5, 1, 0)
+```
+
+```{r}
+#xweight <- seq(0,100,.01)
+#yweight <- predict(glm.fit.college, list(wt = xweight), type = "response")
+temp <- save.data
+temp$Priv <- as.numeric(temp$Priv)
+temp$Priv <- temp$Priv - 1
+
+ggplot(temp, aes(x=Grad.Rate, y=Priv)) + geom_point() + 
+  stat_smooth(method="glm", method.args=list(family="binomial"), se=FALSE)
+
+# plot(save.data$Priv, save.data$Grad.Rate)
+# curve(predict(glm.fit.college, newdata, type="response"), add=TRUE) 
+
+# plot(Priv~Grad.Rate, data=newdata)
+# lines(Priv ~ Grad.Rate, newdata)
+# lines(Priv ~ Grad.Rate, newdata)
+
+#lines(xweight,yweight)
+
+#summary(glm.fit.college)
+#ggplot(data = save.data, aes(x = Grad.Rate, y = Priv)) + geom_point()
+
+#Enroll_rate <- cbind(matrix(save.data$Enroll_rate)
+
+```
+
+```{r}
+#Private <- matrix(save.data$Private == "Yes")
+#Private_Colleges <- save.data[Private,]
+#NotPrivate <- matrix(save.data$Private == "No")
+#Not_Private_Colleges <- save.data[NotPrivate,]
+
+ggplot(temp, aes(x=Enroll, y=PhD, col=Private)) + geom_point() + 
+  stat_smooth(method="lm", se=FALSE)
+```
